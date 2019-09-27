@@ -1,6 +1,7 @@
 import React, { Fragment, useState, useEffect } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faSearch, faTimes } from '@fortawesome/free-solid-svg-icons'
+import { faSearch, faTimes } from '@fortawesome/free-solid-svg-icons';
+import propTypes from 'prop-types';
 
 const FileSearch = ({ placeholder, onFileSearch }) => {
     let [isActive, setActive] = useState(false);
@@ -78,6 +79,15 @@ const FileSearch = ({ placeholder, onFileSearch }) => {
             </div>
         </Fragment>
     )
+}
+
+FileSearch.propTypes = {
+    placeholder: propTypes.string,
+    onFileSearch: propTypes.func.isRequired
+}
+
+FileSearch.defaultProps = {
+    placeholder: 'search...'
 }
 
 export default FileSearch;

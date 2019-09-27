@@ -9,7 +9,7 @@ function App() {
       <div className="row">
         <div className="col-3 bg-red">
           <FileSearch
-            placeholder="文档搜索"
+            placeholder="search"
             onFileSearch={(keywords) => {window.alert(keywords)}}
           />
         </div>

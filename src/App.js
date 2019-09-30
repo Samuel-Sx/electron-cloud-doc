@@ -17,8 +17,9 @@ function App () {
           />
           <FileList
             files={filemock}
-            onFileEdit={() => {}}
-            onFileDelete={() => {}}
+            onFileClick={(id) => {console.log(id)}}
+            onFileDelete={(id) => {console.log('delete' + id)}}
+            onFileSave={(id, newname) => {console.log(id, newname)}}
           />
         </div>
         <div className="col-9 bg-primary"><h1>this is right pennal</h1></div>

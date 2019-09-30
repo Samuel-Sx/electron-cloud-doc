@@ -1,11 +1,33 @@
-import React, { Fragment, useState } from 'react';
+import React, { Fragment, useState, useEffect } from 'react';
 import propTypes from 'prop-types';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faEdit, faTrash } from '@fortawesome/free-solid-svg-icons';
+import { faEdit, faTrash, faTimes } from '@fortawesome/free-solid-svg-icons';
 import { faMarkdown } from '@fortawesome/free-brands-svg-icons'
 
-const FileList = ({ files, onFileEdit, onFileDelete }) => {
+const FileList = ({ files, onFileClick, onFileDelete, onFileSave }) => {
+    const [isEdit, setIsEdit] = useState(null);
+    const [newname, setNewname] = useState('');
+    const cancelEdit = () => {
+        setIsEdit(null);
+        setNewname('');
+    }
 
+    useEffect(() => {
+        const handleRenameFile = event => {
+            const { keyCode } = event;
+            if (keyCode === 13 && isEdit) {
+                const renameItem = files.find(file => file.id === isEdit);
+                onFileSave(renameItem.id, newname);
+                cancelEdit();
+            } else if (keyCode === 27 && isEdit) {
+                cancelEdit();
+            }
+        }
+        document.addEventListener('keyup', handleRenameFile);
+        return () => {
+            document.removeEventListener('keyup', handleRenameFile);
+        }
+    })
     return (
         <ul
             className="list-group-flush"
@@ -17,9 +39,30 @@ const FileList = ({ files, onFileEdit, onFileDelete }) => {
                         className="list-group-item row d-flex justify-content-between align-items-center text-left"
                     >
                         <span className="col-1"><FontAwesomeIcon size="lg" icon={faMarkdown} /></span>
-                        <span className="col-8">{file.title}</span>
-                        <span className="col-1"><FontAwesomeIcon size="lg" icon={faEdit} /></span>
-                        <span className="col-1"><FontAwesomeIcon size="lg" icon={faTrash} /></span>
+                        {
+                            (file.id === isEdit) ?
+                                <input
+                                    className="col-8"
+                                    placeholder={file.title}
+                                    onInput = {e => {setNewname(e.target.value)}}
+                                /> :
+                                <span className="col-8" onClick={() => { onFileClick(file.id) }}>{file.title}</span>
+                        }
+                        {
+                            (file.id === isEdit) ?
+                                <span
+                                    className="col-2"
+                                    onClick={() => { cancelEdit() }}
+                                >
+                                    <FontAwesomeIcon size="lg" icon={faTimes} />
+                                </span> :
+                                (
+                                    <Fragment>
+                                        <span className="col-1" onClick={() => { setIsEdit(file.id); setNewname(file.title) }}><FontAwesomeIcon size="lg" icon={faEdit} /></span>
+                                        <span className="col-1" onClick={() => { onFileDelete(file.id) }}><FontAwesomeIcon size="lg" icon={faTrash} /></span>
+                                    </Fragment>
+                                )
+                        }
                     </li>
                 ))
             }
@@ -29,8 +72,9 @@ const FileList = ({ files, onFileEdit, onFileDelete }) => {
 
 FileList.propTypes = {
     files: propTypes.array.isRequired,
-    onFileEdit: propTypes.func,
-    onFileEdit: propTypes.func
+    onFileClick: propTypes.func,
+    onFileDelete: propTypes.func,
+    onFileSave: propTypes.func
 }
 
 export default FileList;

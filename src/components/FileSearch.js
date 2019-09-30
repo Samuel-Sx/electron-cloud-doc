@@ -2,8 +2,11 @@ import React, { Fragment, useState, useEffect } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faSearch, faTimes } from '@fortawesome/free-solid-svg-icons';
 import propTypes from 'prop-types';
+import useKeyboradPress from '../hooks/useKeyboradPress';
 
 const FileSearch = ({ placeholder, onFileSearch }) => {
+    const entryPress = useKeyboradPress(13);
+    const escPress = useKeyboradPress(27);
     let [isActive, setActive] = useState(false);
     let [value, setValue] = useState('');
     let inputStyle = {
@@ -15,25 +18,16 @@ const FileSearch = ({ placeholder, onFileSearch }) => {
     }
 
     const clearSearch = (e) => {
-        e.preventDefault();
         setActive(false);
         setValue('')
     }
 
     useEffect(() => {
-        const handleKeyup = event => {
-            let { keyCode } = event;
-            if (keyCode === 13 && isActive && value) { // 回车
-                onFileSearch(value);
-                setActive(false)
-            } else if (keyCode === 27 && isActive) { // ESC
-                clearSearch(event)
-            }
-        }
-        document.addEventListener('keyup', handleKeyup);
-
-        return () => {
-            document.removeEventListener('keyup', handleKeyup);
+        if (entryPress && isActive) {
+            onFileSearch(value);
+            setActive(false);
+        } else if (escPress && isActive) {
+            clearSearch();
         }
     })
 
@@ -65,7 +59,7 @@ const FileSearch = ({ placeholder, onFileSearch }) => {
                             className="search-btn col-2"
                             onClick={() => { value && onFileSearch(value) }}
                         >
-                            <FontAwesomeIcon size="lg" icon={faSearch}/>
+                            <FontAwesomeIcon size="lg" icon={faSearch} />
                         </button> :
 
                         <button
@@ -73,7 +67,7 @@ const FileSearch = ({ placeholder, onFileSearch }) => {
                             className="search-btn col-2"
                             onClick={clearSearch}
                         >
-                            <FontAwesomeIcon size="lg" icon={faTimes}/>
+                            <FontAwesomeIcon size="lg" icon={faTimes} />
                         </button>
                 }
             </div>

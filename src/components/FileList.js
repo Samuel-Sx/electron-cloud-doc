@@ -2,32 +2,29 @@ import React, { Fragment, useState, useEffect } from 'react';
 import propTypes from 'prop-types';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faEdit, faTrash, faTimes } from '@fortawesome/free-solid-svg-icons';
-import { faMarkdown } from '@fortawesome/free-brands-svg-icons'
+import { faMarkdown } from '@fortawesome/free-brands-svg-icons';
+import useKeyboradPress from '../hooks/useKeyboradPress';
 
 const FileList = ({ files, onFileClick, onFileDelete, onFileSave }) => {
     const [isEdit, setIsEdit] = useState(null);
     const [newname, setNewname] = useState('');
+    const entryPress = useKeyboradPress(13);
+    const escPress = useKeyboradPress(27);
     const cancelEdit = () => {
         setIsEdit(null);
         setNewname('');
     }
 
     useEffect(() => {
-        const handleRenameFile = event => {
-            const { keyCode } = event;
-            if (keyCode === 13 && isEdit) {
-                const renameItem = files.find(file => file.id === isEdit);
-                onFileSave(renameItem.id, newname);
-                cancelEdit();
-            } else if (keyCode === 27 && isEdit) {
-                cancelEdit();
-            }
-        }
-        document.addEventListener('keyup', handleRenameFile);
-        return () => {
-            document.removeEventListener('keyup', handleRenameFile);
+        if(entryPress && isEdit){
+            const renameItem = files.find(file => file.id === isEdit);
+            onFileSave(renameItem.id, newname);
+            cancelEdit();
+        }else if (escPress && isEdit){
+            cancelEdit();
         }
     })
+
     return (
         <ul
             className="list-group-flush"

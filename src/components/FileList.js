@@ -27,13 +27,13 @@ const FileList = ({ files, onFileClick, onFileDelete, onFileSave }) => {
 
     return (
         <ul
-            className="list-group-flush"
+            className="list-group-flush px-0"
         >
             {
                 files.map(file => (
                     <li
                         key={file.id}
-                        className="list-group-item row d-flex justify-content-between align-items-center text-left"
+                        className="list-group-item row d-flex justify-content-between align-items-center text-left no-gutters"
                     >
                         <span className="col-1"><FontAwesomeIcon size="lg" icon={faMarkdown} /></span>
                         {

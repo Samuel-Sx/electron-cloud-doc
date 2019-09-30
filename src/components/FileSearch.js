@@ -33,11 +33,11 @@ const FileSearch = ({ placeholder, onFileSearch }) => {
 
     return (
         <Fragment>
-            <div className="d-flex alert alert-primary justify-content-between align-items-center">
+            <div className="d-flex alert alert-primary justify-content-between align-items-center no-gutters my-0">
                 {
                     isActive ?
                         <input
-                            className="col-10 text-left"
+                            className="col-10 text-left "
                             type="text"
                             placeholder={placeholder}
                             value={value}

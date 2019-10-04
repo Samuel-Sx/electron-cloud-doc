@@ -20,7 +20,7 @@ const useKeyboradPress = (targetKeyCode) => {
             document.removeEventListener('keydown', handleKeyDown);
             document.removeEventListener('keyup', handleKeyUp);
         }
-    }, [])
+    })
 
     return keyPress;
 }

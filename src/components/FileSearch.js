@@ -29,7 +29,7 @@ const FileSearch = ({ placeholder, onFileSearch }) => {
         } else if (escPress && isActive) {
             clearSearch();
         }
-    })
+    },[entryPress, isActive, escPress, onFileSearch, value])
 
     return (
         <Fragment>

@@ -1,0 +1,35 @@
+.nav-link {
+    .close-item {
+        visibility: hidden;
+    }
+
+    &:hover,
+    &.active {
+        .close-item {
+            visibility: visible;
+        }
+    }
+
+    .unsave-icon {
+        display: inline-block;
+        width: 11px;
+        height: 11px;
+        background: #19C3E6;
+    }
+
+    &.withunsave {
+        .close-item {
+            display: none;
+        }
+
+        &:hover {
+            .close-item {
+                display: inline-block;
+            }
+
+            .unsave-icon {
+                display: none;
+            }
+        }
+    }
+}

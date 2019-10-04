@@ -1,9 +1,13 @@
 import React from 'react';
-import './App.css';
-import 'bootstrap/dist/css/bootstrap.min.css';
 import FileSearch from './components/FileSearch';
 import FileList from './components/FileList';
 import BottomBtn from './components/FileListButton';
+import TabList from './components/TabList';
+import SimpleMDE from "react-simplemde-editor";
+import "easymde/dist/easymde.min.css";
+
+import './App.css';
+import 'bootstrap/dist/css/bootstrap.min.css';
 
 import filemock from './mock/defaultFiles'
 
@@ -37,7 +41,23 @@ function App () {
             />
           </div>
         </div>
-        <div className="col-9 bg-primary"><h1>this is right pennal</h1></div>
+        <div className="col-9">
+          <TabList
+            files={filemock}
+            activeId="1"
+            unsaveIds={['1', '2']}
+            onTabClick={(id) => {console.log(`tabid:${id}`)}}
+            onSaveTab={() => {}}
+            onCloseTab={(id) => {console.log(`closing: ${id}`)}}
+          />
+          <SimpleMDE
+            value={filemock[1].body}
+            onChange={newvalue => console.info(newvalue)}
+            options={{
+              minHeight: window.innerHeight - 150 + 'px'
+            }}
+          />
+        </div>
       </div>
     </div>
   );

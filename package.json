@@ -9,17 +9,23 @@
     "@fortawesome/free-solid-svg-icons": "^5.11.2",
     "@fortawesome/react-fontawesome": "^0.1.4",
     "bootstrap": "^4.3.1",
+    "classnames": "^2.2.6",
     "electron": "^6.0.10",
+    "electron-packager": "^14.0.6",
+    "node-sass": "^4.12.0",
     "react": "^16.9.0",
     "react-dom": "^16.9.0",
-    "react-scripts": "3.1.2"
+    "react-scripts": "3.1.2",
+    "react-simplemde-editor": "^4.1.0"
   },
   "scripts": {
     "start": "react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject",
-    "dev": "concurrently \"wait-on http://localhost:3000 && electron .\" \"cross-env BROWSER=none npm start\""
+    "dev": "concurrently \"wait-on http://localhost:3000 && electron .\" \"cross-env BROWSER=none npm start\"",
+    "ele": "electron .",
+    "package": "electron-packager . app --darwin --out presenterTool --arch=x64 --overwrite --ignore=node_modulesls --electron-version=1.8.2"
   },
   "eslintConfig": {
     "extends": "react-app"

@@ -3,3 +3,17 @@
   border: none;
   color: inherit
 }
+.left-panel{
+  height: 100vh;
+}
+.bottom-btn-group{
+  position: absolute;
+  bottom: 0;
+  width: 100%;
+}
+.bottom-btn-group > .btn{
+  border-radius: 0 !important;
+}
+.CodeMirror, .editor-toolbar{
+  border:none;
+}

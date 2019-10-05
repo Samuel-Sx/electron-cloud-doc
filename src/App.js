@@ -16,12 +16,93 @@ function App () {
   const [activeFileID, setActiveFileId] = useState('');
   const [openFileIDs, setOpenFileIDs] = useState([]);
   const [unsavedFileIDs, setUnsavedFileIDs] = useState([]);
+  const [searchFiles, setSearchFiles] = useState([]);
+  const showFiles = searchFiles.length > 0 ? searchFiles : files
   // 查找已打开的文件列表
   const openFiles = openFileIDs.map(openID => {
     return files.find(file => file.id === openID)
   })
   // 查找当前选中文件
   const activeFile = files.find(file => file.id === activeFileID)
+
+  // 文件列表点击方法
+  const handleFileItemClick = (id) => {
+    // 修改选中文件
+    setActiveFileId(id);
+    // 如果当前文件不存在于打开列表
+    // 在已打开文件中插入当前文件
+    if (!openFileIDs.includes(id)) {
+      setOpenFileIDs([...openFileIDs, id])
+    }
+    setSearchFiles([]);
+  }
+
+  // tab点击方法
+  const handleTabItemClick = (id) => {
+    // 修改选中文件
+    activeFileID !== id && setActiveFileId(id);
+  }
+
+  // tab关闭方法
+  const handleTabCloseClick = (id) => {
+    // 重组移除关闭文件后的打开文件数组
+    const newOpenFileIDs = openFileIDs.filter(openID => openID !== id);
+    // 把原数组替换为新数组
+    setOpenFileIDs(newOpenFileIDs);
+    // 如果打开文件数组不为空，则将最后一个文件设置为当前文件
+    // 否则，将当前文件state置空
+    if (openFileIDs.length > 0) {
+      setActiveFileId(newOpenFileIDs[newOpenFileIDs.length - 1])
+    } else {
+      setActiveFileId('')
+    }
+  }
+
+  // 文档修改方法
+  const handleFileChange = (id, value, type) => {
+    // const initial = files.find(file => file.id === id).body
+
+    // 如果是内容操作，并且未保存数组中没有当前文件
+    // 将当前文件加入未保存数组中
+    if (!unsavedFileIDs.includes(id) && type === 'content') {
+      setUnsavedFileIDs([...unsavedFileIDs, id])
+    }
+    // 替换文件内容
+    const newFiles = files.map(file => {
+      if (file.id === id) {
+        // 按照type类型替换文件内容/标题
+        switch (type) {
+          case 'content':
+            file.body = value;
+            break;
+          case 'title':
+            file.title = value;
+            break;
+          default:
+            break;
+        }
+      }
+      return file;
+    })
+
+    setFiles(newFiles);
+  }
+
+  // 文档列表删除方法
+  const handleDeleteFile = (id) => {
+    // 重组删除当前文件之后的文件数组
+    const newFiles = files.filter(file => file.id !== id);
+    setFiles(newFiles);
+    // 执行关闭操作对右侧内容区域对应文件进行清除
+    handleTabCloseClick(id)
+  }
+
+  // 搜索文档方法
+  const handleSearchFiles = (keywords) => {
+    const searchedFiles = files.filter(file => file.title.includes(keywords));
+    setSearchFiles(searchedFiles);
+  }
+
   return (
     <div className="App container-fluid px-0">
       <div className="row no-gutters">
@@ -29,13 +110,13 @@ function App () {
         <div className="col-3 bg-red left-panel">
           <FileSearch
             placeholder="search"
-            onFileSearch={(keywords) => { window.alert(keywords) }}
+            onFileSearch={handleSearchFiles}
           />
           <FileList
-            files={files}
-            onFileClick={(id) => { console.log(id) }}
-            onFileDelete={(id) => { console.log('delete' + id) }}
-            onFileSave={(id, newname) => { console.log(id, newname) }}
+            files={showFiles}
+            onFileClick={handleFileItemClick}
+            onFileDelete={handleDeleteFile}
+            onFileSave={(id, newname) => { handleFileChange(id, newname, 'title')}}
           />
           <div className="row no-gutters bottom-btn-group">
             <BottomBtn
@@ -56,15 +137,16 @@ function App () {
         <div className="col-9">
           <TabList
             files={openFiles}
-            activeId='1'
-            unsaveIds={['1', '2']}
-            onTabClick={(id) => { console.log(`tabid:${id}`) }}
+            activeId={activeFileID}
+            unsaveIds={unsavedFileIDs}
+            onTabClick={handleTabItemClick}
             onSaveTab={() => { }}
-            onCloseTab={(id) => { console.log(`closing: ${id}`) }}
+            onCloseTab={handleTabCloseClick}
           />
           <SimpleMDE
+            key={activeFile && activeFile.id}
             value={activeFile && activeFile.body}
-            onChange={newvalue => console.info(newvalue)}
+            onChange={(newcontent) => { handleFileChange(activeFile.id, newcontent, 'content') }}
             options={{
               minHeight: "85vh",
               status: false

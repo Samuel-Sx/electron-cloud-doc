@@ -19,17 +19,19 @@ const FileSearch = ({ placeholder, onFileSearch }) => {
 
     const clearSearch = (e) => {
         setActive(false);
-        setValue('')
+        setValue('');
+        onFileSearch('');
     }
 
     useEffect(() => {
         if (entryPress && isActive) {
             onFileSearch(value);
             setActive(false);
+            setValue('');
         } else if (escPress && isActive) {
             clearSearch();
         }
-    },[entryPress, isActive, escPress, onFileSearch, value])
+    }, [])
 
     return (
         <Fragment>

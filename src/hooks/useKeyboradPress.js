@@ -21,7 +21,6 @@ const useKeyboradPress = (targetKeyCode) => {
             document.removeEventListener('keyup', handleKeyUp);
         }
     })
-
     return keyPress;
 }
 

@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import uuidv4 from 'uuid';
 import FileSearch from './components/FileSearch';
 import FileList from './components/FileList';
 import BottomBtn from './components/FileListButton';
@@ -22,6 +23,7 @@ function App () {
   const openFiles = openFileIDs.map(openID => {
     return files.find(file => file.id === openID)
   })
+
   // 查找当前选中文件
   const activeFile = files.find(file => file.id === activeFileID)
 
@@ -77,6 +79,7 @@ function App () {
             break;
           case 'title':
             file.title = value;
+            file.isNew && (delete file.isNew)
             break;
           default:
             break;
@@ -103,6 +106,23 @@ function App () {
     setSearchFiles(searchedFiles);
   }
 
+  // 新建文件方法
+  const handleCreateFile = () => {
+    const hasNewFile = files.find(file => file.isNew);
+    if(hasNewFile) return;
+    const newFiles = [
+      ...files,
+      {
+        id: uuidv4(),
+        title: '',
+        body: '> entry markdown context',
+        createAt: new Date().getTime(),
+        isNew: true
+      }
+    ]
+    setFiles(newFiles)
+  }
+
   return (
     <div className="App container-fluid px-0">
       <div className="row no-gutters">
@@ -123,7 +143,7 @@ function App () {
               text="新建"
               icon="add"
               className="btn btn-primary"
-              onButtonClick={() => console.log('new')}
+              onButtonClick={handleCreateFile}
             />
             <BottomBtn
               text="导入"

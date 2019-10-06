@@ -10,20 +10,32 @@ const FileList = ({ files, onFileClick, onFileDelete, onFileSave }) => {
     const [newname, setNewname] = useState('');
     const entryPress = useKeyboradPress(13);
     const escPress = useKeyboradPress(27);
-    const cancelEdit = () => {
+    const cancelEdit = (file) => {
         setIsEdit(null);
         setNewname('');
+        // 如果是新建文件，则执行删除操作
+        if(file.isNew){
+            onFileDelete(file.id)
+        }
     }
 
     useEffect(() => {
-        if(entryPress && isEdit){
-            const renameItem = files.find(file => file.id === isEdit);
+        const renameItem = files.find(file => file.id === isEdit);
+        if(entryPress && isEdit && newname.trim() !== ''){
             onFileSave(renameItem.id, newname);
-            cancelEdit();
+            cancelEdit(renameItem);
         }else if (escPress && isEdit){
-            cancelEdit();
+            cancelEdit(renameItem);
         }
     })
+
+    useEffect(() => {
+        const newFile = files.find(file => file.isNew);
+        if(newFile){
+            setIsEdit(newFile.id);
+            setNewname(newFile.title);
+        }
+    }, [files])
 
     return (
         <ul
@@ -37,7 +49,7 @@ const FileList = ({ files, onFileClick, onFileDelete, onFileSave }) => {
                     >
                         <span className="col-1"><FontAwesomeIcon size="lg" icon={faMarkdown} /></span>
                         {
-                            (file.id === isEdit) ?
+                            ((file.id === isEdit) || file.isNew) ?
                                 <input
                                     className="col-8"
                                     placeholder={file.title}
@@ -46,10 +58,10 @@ const FileList = ({ files, onFileClick, onFileDelete, onFileSave }) => {
                                 <span className="col-8" onClick={() => { onFileClick(file.id) }}>{file.title}</span>
                         }
                         {
-                            (file.id === isEdit) ?
+                            ((file.id === isEdit) || file.isNew) ?
                                 <span
                                     className="col-2"
-                                    onClick={() => { cancelEdit() }}
+                                    onClick={() => { cancelEdit(file) }}
                                 >
                                     <FontAwesomeIcon size="lg" icon={faTimes} />
                                 </span> :

@@ -5,12 +5,18 @@ import FileList from './components/FileList';
 import BottomBtn from './components/FileListButton';
 import TabList from './components/TabList';
 import SimpleMDE from "react-simplemde-editor";
-import "easymde/dist/easymde.min.css";
 
+import "easymde/dist/easymde.min.css";
 import './App.css';
 import 'bootstrap/dist/css/bootstrap.min.css';
 
-import filemock from './mock/defaultFiles'
+import filemock from './mock/defaultFiles';
+
+const remote = window.require('electron').remote;
+const { join } = window.require('path');
+const fileOpt = require('./utls/FileIO');
+
+const documentDir = remote.app.getPath('documents');
 
 function App () {
   const [files, setFiles] = useState(filemock);
@@ -61,7 +67,7 @@ function App () {
   }
 
   // 文档修改方法
-  const handleFileChange = (id, value, type) => {
+  const handleFileChange = (id, value, type, newFile) => {
     // const initial = files.find(file => file.id === id).body
 
     // 如果是内容操作，并且未保存数组中没有当前文件
@@ -78,6 +84,17 @@ function App () {
             file.body = value;
             break;
           case 'title':
+            if (file.isNew) {
+              fileOpt.save(join(documentDir, `${value}.md`), files.find(file => file.id === id).body)
+                .then(() => {
+                  console.log(`新增文件`)
+                })
+            } else {
+              fileOpt.rename(join(documentDir, `${files.find(file => file.id === id).title}.md`), join(documentDir, `${value}.md`))
+                .then(() => {
+                  console.log(`重命名文件`)
+                })
+            }
             file.title = value;
             file.isNew && (delete file.isNew)
             break;
@@ -109,7 +126,7 @@ function App () {
   // 新建文件方法
   const handleCreateFile = () => {
     const hasNewFile = files.find(file => file.isNew);
-    if(hasNewFile) return;
+    if (hasNewFile) return;
     const newFiles = [
       ...files,
       {
@@ -136,7 +153,7 @@ function App () {
             files={showFiles}
             onFileClick={handleFileItemClick}
             onFileDelete={handleDeleteFile}
-            onFileSave={(id, newname) => { handleFileChange(id, newname, 'title')}}
+            onFileSave={(id, newname) => { handleFileChange(id, newname, 'title', files.find(file => file.id === id).isNew) }}
           />
           <div className="row no-gutters bottom-btn-group">
             <BottomBtn

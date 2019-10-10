@@ -31,7 +31,7 @@ const FileSearch = ({ placeholder, onFileSearch }) => {
         } else if (escPress && isActive) {
             clearSearch();
         }
-    }, [])
+    }, [entryPress, escPress, isActive])
 
     return (
         <Fragment>

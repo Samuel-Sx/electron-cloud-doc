@@ -133,7 +133,7 @@ function App () {
         const newFiles = { ...files };
 
         try {
-            await fileOpt.remove(newFiles[id].path);
+            newFiles[id].path && await fileOpt.remove(newFiles[id].path);
         } catch (err) {
             console.error(err);
         }

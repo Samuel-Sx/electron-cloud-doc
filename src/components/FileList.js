@@ -21,7 +21,9 @@ const FileList = ({ files, onFileClick, onFileDelete, onFileSave }) => {
 
     useEffect(() => {
         const renameItem = files.find(file => file.id === isEdit);
-        if(entryPress && isEdit && newname.trim() !== ''){
+        if(entryPress && isEdit && (newname.trim() !== '')){
+            const existTitle = files.find(file => file.title === newname)
+            if(existTitle) return;
             onFileSave(renameItem.id, newname);
             cancelEdit(renameItem, true);
         }else if (escPress && isEdit){
@@ -30,6 +32,7 @@ const FileList = ({ files, onFileClick, onFileDelete, onFileSave }) => {
     })
 
     useEffect(() => {
+        // 更新文件列表
         const newFile = files.find(file => file.isNew);
         if(newFile){
             setIsEdit(newFile.id);

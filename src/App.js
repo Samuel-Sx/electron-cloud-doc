@@ -48,7 +48,20 @@ function App () {
     const activeFile = files[activeFileID]
 
     // 文件列表点击方法
-    const handleFileItemClick = (id) => {
+    const handleFileItemClick = async (id) => {
+        const currentFile = files[id];
+        let fileContent;
+        try {
+            fileContent = await fileOpt.getContent(currentFile.path);
+        }catch(err){
+            console.error(err);
+        }
+        if (!fileContent) return;
+
+        if(!currentFile.isOpened){
+            const newFiles = {...files, [id]: {...files[id], body: fileContent, isOpened: true}};
+            setFiles(newFiles);
+        }
         // 修改选中文件
         setActiveFileId(id);
         // 如果当前文件不存在于打开列表

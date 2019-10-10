@@ -9,6 +9,9 @@ const fileOpt = {
     },
     remove: (path) => {
         return fs.unlink(path);
+    },
+    getContent: (path) => {
+        return fs.readFile(path, {encoding: 'utf8'});
     }
 }
 

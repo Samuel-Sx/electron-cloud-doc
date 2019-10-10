@@ -10,11 +10,11 @@ const FileList = ({ files, onFileClick, onFileDelete, onFileSave }) => {
     const [newname, setNewname] = useState('');
     const entryPress = useKeyboradPress(13);
     const escPress = useKeyboradPress(27);
-    const cancelEdit = (file) => {
+    const cancelEdit = (file, save) => {
         setIsEdit(null);
         setNewname('');
         // 如果是新建文件，则执行删除操作
-        if(file.isNew){
+        if(file.isNew && !save){
             onFileDelete(file.id)
         }
     }
@@ -23,7 +23,7 @@ const FileList = ({ files, onFileClick, onFileDelete, onFileSave }) => {
         const renameItem = files.find(file => file.id === isEdit);
         if(entryPress && isEdit && newname.trim() !== ''){
             onFileSave(renameItem.id, newname);
-            cancelEdit(renameItem);
+            cancelEdit(renameItem, true);
         }else if (escPress && isEdit){
             cancelEdit(renameItem);
         }

@@ -11,6 +11,7 @@ const TabList = ({ files, activeId, unsaveIds, onTabClick, onCloseTab }) => {
         <ul className="nav nav-tabs">
             {
                 files.map(file => {
+                    if(!file) return;
                     const isUnsave = unsaveIds.includes(file.id);
                     const classnames = ClassNames({
                         'nav-link': true,

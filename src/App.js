@@ -11,10 +11,8 @@ import "easymde/dist/easymde.min.css";
 import './App.css';
 import 'bootstrap/dist/css/bootstrap.min.css';
 
-import filemock from './mock/defaultFiles';
-
 const Store = window.require('electron-store');
-const stroe = new Store({ 'name': 'Files Data' })
+const store = new Store({ 'name': 'Files Data' })
 const remote = window.require('electron').remote;
 const { join } = window.require('path');
 const fileOpt = require('./utls/FileIO');
@@ -22,30 +20,29 @@ const fileOpt = require('./utls/FileIO');
 const documentDir = remote.app.getPath('documents');
 // 数据持久化方法
 const saveToStore = (files) => {
-    const Files = files.reduce((pre, file) => {
+    const Files = DictionaryToArray(files).reduce((pre, file) => {
         const { id, title, path, createAt } = file;
-        console.log(id, title, path, createAt)
         pre[id] = {
             id,
             title,
             path,
             createAt
         }
+        return pre
     }, {});
-    // stroe.set('files', Files);
+
+    store.set('files', Files);
 }
 
 function App () {
-    const [files, setFiles] = useState(ArrayToDictionary(filemock));
+    const [files, setFiles] = useState(store.get('files') || {});
     const [activeFileID, setActiveFileId] = useState('');
     const [openFileIDs, setOpenFileIDs] = useState([]);
     const [unsavedFileIDs, setUnsavedFileIDs] = useState([]);
     const [searchFiles, setSearchFiles] = useState([]);
     const showFiles = searchFiles.length > 0 ? searchFiles : DictionaryToArray(files);
     // 查找已打开的文件列表
-    const openFiles = openFileIDs.map(openID => {
-        return files[openID]
-    })
+    const openFiles = openFileIDs.map(openID => files[openID])
 
     // 查找当前选中文件
     const activeFile = files[activeFileID]
@@ -96,17 +93,17 @@ function App () {
         if (type === 'content') {
             newFiles = { ...files, [id]: { ...files[id], body: value } };
         } else if (type === 'title') {
-            newFiles = { ...files, [id]: { ...files[id], title: value } };
+            newFiles = { ...files, [id]: { ...files[id], title: value, path: join(documentDir, `${value}.md`) } };
             if (files[id].isNew) {
                 delete newFiles[id].isNew;
                 try {
-                    await fileOpt.save(join(documentDir, `${value}.md`), files[id].body);
+                    await fileOpt.save(newFiles[id].path, files[id].body);
                 } catch (err) {
                     console.error(err);
                 }
             } else {
                 try {
-                    await fileOpt.rename(join(documentDir, `${files[id].title}.md`), join(documentDir, `${value}.md`));
+                    await fileOpt.rename(join(documentDir, `${files[id].title}.md`), newFiles[id].path);
                 } catch (err) {
                     console.error(err);
                 }
@@ -118,12 +115,20 @@ function App () {
     }
 
     // 文档列表删除方法
-    const handleDeleteFile = (id) => {
+    const handleDeleteFile = async (id) => {
         // 重组删除当前文件之后的文件数组
-        // const newFiles = files.filter(file => file.id !== id);
         const newFiles = { ...files };
+
+        try {
+            await fileOpt.remove(newFiles[id].path);
+        } catch (err) {
+            console.error(err);
+        }
+
         delete newFiles[id];
+
         setFiles(newFiles);
+        saveToStore(newFiles);
         // 执行关闭操作对右侧内容区域对应文件进行清除
         handleTabCloseClick(id)
     }
@@ -142,7 +147,7 @@ function App () {
         const fileid = uuidv4()
         const newFiles = {
             ...files,
-            [fileid]:{
+            [fileid]: {
                 id: fileid,
                 title: '',
                 body: '> entry markdown context',
@@ -167,7 +172,7 @@ function App () {
                         files={showFiles}
                         onFileClick={handleFileItemClick}
                         onFileDelete={handleDeleteFile}
-                        onFileSave={(id, newname) => { console.info(files,id);handleFileChange(id, newname, 'title', files[id].isNew) }}
+                        onFileSave={(id, newname) => { handleFileChange(id, newname, 'title', files[id].isNew) }}
                     />
                     <div className="row no-gutters bottom-btn-group">
                         <BottomBtn

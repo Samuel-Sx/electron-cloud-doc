@@ -14,7 +14,7 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 const Store = window.require('electron-store');
 const store = new Store({ 'name': 'Files Data' })
 const remote = window.require('electron').remote;
-const { join } = window.require('path');
+const { join, basename, extname } = window.require('path');
 const fileOpt = require('./utls/FileIO');
 
 const documentDir = remote.app.getPath('documents');
@@ -53,13 +53,14 @@ function App () {
         let fileContent;
         try {
             fileContent = await fileOpt.getContent(currentFile.path);
-        }catch(err){
+        } catch (err) {
             console.error(err);
         }
-        if (!fileContent) return;
 
-        if(!currentFile.isOpened){
-            const newFiles = {...files, [id]: {...files[id], body: fileContent, isOpened: true}};
+        if (!fileContent && typeof fileContent !== 'string') return;
+
+        if (!currentFile.isOpened) {
+            const newFiles = { ...files, [id]: { ...files[id], body: fileContent, isOpened: true } };
             setFiles(newFiles);
         }
         // 修改选中文件
@@ -172,6 +173,50 @@ function App () {
         setFiles(newFiles);
     }
 
+    // 将文件添加至编辑器列表
+    const addFileToEditor = (filePathArray) => {
+        let unOpenFiles,
+            unexistFile,
+            unOpenFileObj,
+            newFiles;
+        // 通过文件路径过滤已打开文件
+        unOpenFiles = filePathArray.filter(path => {
+            unexistFile = Object.values(files).find(file => {
+                return file.path === path
+            })
+            return !unexistFile
+        })
+
+        // 完善文件信息对象
+        unOpenFileObj = unOpenFiles.map(path => {
+            return ({
+                id: uuidv4(),
+                title: basename(path, extname(path)),
+                path: path,
+                createAt: new Date().getTime()
+            })
+        })
+
+        // 把文件信息转为字典格式
+        newFiles = {...files, ...ArrayToDictionary(unOpenFileObj)};
+
+        // 更新文件列表，持久化文件列表信息
+        setFiles(newFiles);
+        saveToStore(newFiles);
+    }
+
+    // 导入文件方法
+    const handleImportFile = () => {
+        remote.dialog.showOpenDialog({
+            title: 'Open Markdown Files',
+            properties: ['openFile', "openDirectory", "multiSelections"],
+            filters: [{ name: 'Markdown', extensions: ['md'] }]
+        }, paths => {
+            if (!paths || !Array.isArray(paths)) return;
+            addFileToEditor(paths);
+        })
+    }
+
     return (
         <div className="App container-fluid px-0">
             <div className="row no-gutters">
@@ -198,7 +243,7 @@ function App () {
                             text="导入"
                             icon="upload"
                             className="btn btn-success"
-                            onButtonClick={() => console.log('import')}
+                            onButtonClick={handleImportFile}
                         />
                     </div>
                 </div>

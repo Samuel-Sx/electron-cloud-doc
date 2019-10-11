@@ -14,7 +14,7 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 const Store = window.require('electron-store');
 const store = new Store({ 'name': 'Files Data' })
 const remote = window.require('electron').remote;
-const { join, basename, extname } = window.require('path');
+const { join, basename, extname, dirname } = window.require('path');
 const fileOpt = require('./utls/FileIO');
 
 const documentDir = remote.app.getPath('documents');
@@ -34,6 +34,14 @@ const saveToStore = (files) => {
     store.set('files', Files);
 }
 
+// 选择文件夹方法
+const selectDirectory = () => {
+    return remote.dialog.showOpenDialogSync({
+        title: 'Select Directory',
+        properties: ['openDirectory', 'createDirectory', 'promptToCreate']
+    })[0];
+}
+
 function App () {
     const [files, setFiles] = useState(store.get('files') || {});
     const [activeFileID, setActiveFileId] = useState('');
@@ -47,6 +55,18 @@ function App () {
     // 查找当前选中文件
     const activeFile = files[activeFileID]
 
+    // 检查文件路径信息
+    const checkFilePath = (file, newtitle) => {
+        return new Promise((resolve, reject) => {
+            let paths = file.path;
+            if (!paths) {
+                paths = join(selectDirectory(), `${newtitle}.md`)
+            } else {
+                paths = join(dirname(file.path), newtitle + extname(file.path));
+            }
+            resolve(paths);
+        })
+    }
     // 文件列表点击方法
     const handleFileItemClick = async (id) => {
         const currentFile = files[id];
@@ -107,7 +127,11 @@ function App () {
         if (type === 'content') {
             newFiles = { ...files, [id]: { ...files[id], body: value } };
         } else if (type === 'title') {
-            newFiles = { ...files, [id]: { ...files[id], title: value, path: join(documentDir, `${value}.md`) } };
+            // 先校验是否存在路径属性, 如果不存在,需要弹出路径选择并生成新路径
+            const filePath = await checkFilePath(files[id], value);
+            // 重组新文件列表格式
+            newFiles = { ...files, [id]: { ...files[id], title: value, path: filePath } };
+            // 判断是否为新建文件
             if (files[id].isNew) {
                 delete newFiles[id].isNew;
                 try {
@@ -117,7 +141,7 @@ function App () {
                 }
             } else {
                 try {
-                    await fileOpt.rename(join(documentDir, `${files[id].title}.md`), newFiles[id].path);
+                    await fileOpt.rename(files[id].path, newFiles[id].path);
                 } catch (err) {
                     console.error(err);
                 }
@@ -173,6 +197,19 @@ function App () {
         setFiles(newFiles);
     }
 
+    // 保存文件内容方法
+    const handleSaveFile = async () => {
+        const currentFile = files[activeFileID]
+        if (!currentFile) return;
+        try {
+            await fileOpt.save(currentFile.path, currentFile.body);
+            const newUnsavedFileIDs = unsavedFileIDs.filter(id => id !== activeFileID)
+            setUnsavedFileIDs(newUnsavedFileIDs);
+        } catch (err) {
+            console.error(err)
+        }
+    }
+
     // 将文件添加至编辑器列表
     const addFileToEditor = (filePathArray) => {
         let unOpenFiles,
@@ -198,7 +235,7 @@ function App () {
         })
 
         // 把文件信息转为字典格式
-        newFiles = {...files, ...ArrayToDictionary(unOpenFileObj)};
+        newFiles = { ...files, ...ArrayToDictionary(unOpenFileObj) };
 
         // 更新文件列表，持久化文件列表信息
         setFiles(newFiles);
@@ -244,6 +281,12 @@ function App () {
                             icon="upload"
                             className="btn btn-success"
                             onButtonClick={handleImportFile}
+                        />
+                        <BottomBtn
+                            text="保存"
+                            icon="upload"
+                            className="btn btn-warning"
+                            onButtonClick={handleSaveFile}
                         />
                     </div>
                 </div>
